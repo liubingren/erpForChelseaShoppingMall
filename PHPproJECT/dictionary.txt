@@ -1,0 +1,7 @@
+﻿{
+	"id": {"cn": "用户ID", "en": "ID"},
+	"title": {"cn": "标题", "en": "TITLE"},
+	"img": {"cn": "图片", "en": "photo"},
+	"price": {"cn": "价格", "en": "PRICE"},
+	"url": {"cn": "路径", "en": "URL"}
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="css/jquery-confirm.css"/>
+		<link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" />
+		<script src="js/jquery-3.1.1.min.js"></script>
+		<script src="js/angular.js"></script>
+		<script src="js/common.js"></script>
+		<script src="js/jquery-confirm.js"></script>
+		<style type="text/css" media="screen">
+		.mask{position: fixed; top: 0; right: 0; bottom: 0; left: 0; background-color: rgba(0,0,0,0.2);}
+        .mask>i{position:fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); font-size: 40px; color:#025c90;}
+		.item-hidden{display:none;}
+		
+		.list-group input{width:100%}
+		.dkHeader{text-align:center;padding-left:50px;width: 100%; height: 48px; line-height: 48px;background: black;color: white;}
+		.dkContainer{position: fixed; top: 48px; right: 0; bottom: 48px; left: 0; border: solid 1px #C8C7CC;}
+		.dkContainer>.dkNav{position:absolute; width: 225px; top:0; bottom: 0; left: 0; border-right: solid 1px #C8C7CC;}
+		.dkContainer>.dkBody{position: absolute; top: 0; right: 0; bottom: 0; left: 225px;}
+	    </style>
+	</head>
+	<body ng-app="App" ng-controller="controller">
+	      
+		<div class="dkHeader">
+		  <span ng-bind="account" style="text-align: left;background: black;color: white;"></span>
+		  <span style="text-align: center;background: black;color: white;">后台管理系统</span> 	
+	    </div>
+		<div class="dkContainer">
+			<div class="dkNav">
+				<ul class="list-group">
+					<li class="list-group-item" ng-click="resetpassword()"><a href="javascript:">修改密码</a></li>
+					<li class="list-group-item" ng-click="listpage()"><a href="javascript:(0)">产品列表</a></li>
+					<li class="list-group-item" ng-click="orderlist()"><a href="javascript:(0)">订单列表</a></li>
+					<li class="list-group-item" ng-click="userlist()"><a href="javascript:(0)">用户列表</a></li>
+					<li class="list-group-item" ng-click="logout()"><a href="javascript:">退出登录</a></li>
+				</ul>
+			</div>
+			<div class="dkBody" style="overflow: auto;"></div>
+		</div>
+		<div class="dkFoot"></div>
+		
+		<script type="text/javascript">
+            var app=angular.module("App",['commonApp']);
+			
+			app.config(function($controllerProvider){
+				app.register = {
+					controller: $controllerProvider.register
+				}
+		    })
+		
+            app.controller("controller",['$scope','$http','$compile',function($scope,$http,$compile){
+            		
+					$http.post("GETSESSION.PHP").success(function(response){
+						if(response.state==true){
+						   $scope.account=response.account;
+						}else{
+						    window.location.href="login.html";
+						}
+            	    });
+					$scope.logout=function(){
+						$http.post("LOGOUT.PHP").success(function(response){
+						  window.location.href="login.html";
+            		    });  
+					}
+					$scope.resetpassword = function(){
+						//jquery load
+						$http.get('resetpassword.html').success(function(response){
+							$compile($('.dkBody').html(response))($scope);
+						})
+					}
+					$scope.listpage = function(){
+						//jquery load
+						$http.get('listpage.html').success(function(response){
+							$compile($('.dkBody').html(response))($scope);
+						})
+					}
+					$scope.orderlist = function(){
+						//jquery load
+						$http.get('orderlist.html').success(function(response){
+							$compile($('.dkBody').html(response))($scope);
+						})
+					}
+					$scope.userlist = function(){
+						//jquery load
+						$http.get('userlist.html').success(function(response){
+							$compile($('.dkBody').html(response))($scope);
+						})
+					}
+					
+					
+            }])
+            app.filter('range', function () {
+	            return function (array, range) {
+	                for (var i = 1 ; i <= range; i++) {
+	                    array.push(i);
+	                }
+	                return array;
+	            }
+            })
+		</script>
+	</body>
+</html>

@@ -1,0 +1,188 @@
+﻿<style type="text/css">
+        .highlight{background-color:#274ee4; color:#fff;}
+        span{border:solid 1px #ccc; padding: 5px; background:#e0dbdb; cursor:pointer;}
+        span.active{color:#ccc; cursor:not-allowed;}
+        .tr-selected>td {
+		    background-color: #0094ff!important;
+		    color: #fff!important;
+		}
+		img{
+			height: 60px;
+		}
+</style>
+<script src="js/jquery-3.1.1.min.js"></script>
+<div class="bs-example" ng-controller="datagrid">
+    <table class="table table-striped" style="table-layout:fixed">
+        <thead>
+        	 <tr>
+                <td colspan="{{colspan + 1}}">
+                    <select ng-model="columnName" ng-change="change()" style="height: 26px;">
+                        <option ng-repeat="(key, value) in students[0]" ng-bind="key" value="{{key}}"></option>
+                    </select>
+                    <input type="text" ng-model="keyWord" ng-change="change()"/>
+                    <button class="btn btn-default add" type="submit">增加商品</button>
+                    <button class="btn btn-default add" type="submit">刷新</button>
+                </td>
+            </tr>
+            <tr>
+                <th dk-repeat="" ng-repeat="(key, value) in students[0]" ng-bind="key"></td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="student in students| filter: search | limitTo : pagerows : (pageindex - 1) * pagerows" style="background-color: {{student['projectname'].indexOf('网') > -1 ? 'red' : ''}}" ng-click="trClick(student, $index, $event)">
+                <td ng-repeat="(key, value) in student" ng-bind="value" ng-if="value!=student['img']" width="100"></td>
+                <td width="100"><img ng-src="{{student['img']}}" style="width: 75px;"/></td>
+                <td width="100">
+                	<button class="btn btn-default remove" type="submit">提交修改内容</button>
+                	<button class="btn btn-default remove" type="submit">删除</button>
+                </td>
+            </tr>
+        </tbody> 
+        <tfoot>
+            <tr>
+                <td colspan="{{colspan + 1}}">
+                    <span ng-repeat="p in [] | range: pagecount" ng-bind="p" class="{{p == pageindex ? 'active' : ''}}" ng-click="page(p)" ng-show="show"></span>
+                </td>
+            </tr>
+           
+        </tfoot>
+    </table>
+</div>
+<script type="text/javascript">
+	app.register.controller('datagrid', ['$scope', '$http', function ($scope, $http) {
+		    $scope.highlight = 'highlight';
+            $scope.container=[];
+            $http.get('listpage.php').success(function (response) {
+                $scope.students = response;
+                console.log(response);
+                $scope.colspan = 0;
+                for (var key in $scope.students[0]) {
+                    $scope.colspan += 1;
+                }
+
+                //每页显示 5 行
+               
+                $scope.pagerows =5;
+                $scope.pageindex =1;
+                $scope.pagecount = Math.ceil($scope.students.length / $scope.pagerows);
+                
+                
+            })
+//          if($attrs.changepage=="true"){
+            	    $scope.show=1;
+	            	$scope. page = function(_index) {
+	                $scope.pageindex = _index;
+	         
+	            } 	
+	            $scope.search=function(student){
+			                if ($scope.columnName) {
+			                    if (JSON.stringify(student[$scope.columnName]).indexOf($scope.keyWord) > -1) {
+			                        return student;
+			                    }
+			                } else {
+			                    return student;
+			                }
+			    }
+	            $scope.change=function(){
+	            	var total=0;
+	            	for(var i=0;i<$scope.students.length;i++){
+		            	if(JSON.stringify($scope.students[i][$scope.columnName]).indexOf($scope.keyWord) > -1){
+		            		total++;
+		            	}
+		            }
+	            	console.log(total);
+	            	$scope.pagecount = Math.ceil(total/ $scope.pagerows);
+	            } 
+
+                var tbody=document.getElementsByTagName('tbody')[0];
+                tbody.onclick=function(evt){
+    				var oevent=evt||event;
+    				console.log(this);
+    				if(oinput){
+    					//oinput.style.display="none";
+    					document.body.removeChild(oinput);
+    				}
+    				var oinput=document.createElement("input");
+    				oinput.type="text";
+    				oinput.style.width="98%";
+    				oinput.style.height="98%";
+    				oinput.value=oevent.target.innerHTML;
+    				
+    				if(oevent.target.localName=="td"){
+    					$(oevent.target).closest('tr').addClass('tr-selected').siblings('tr').removeClass('tr-selected');
+    					oevent.target.innerHTML="";
+    					oevent.target.appendChild(oinput);
+    					oinput.style.color="black";
+    					oinput.focus();//获得焦点
+    					oinput.onblur=function(){
+    						oevent.target.innerHTML=oinput.value;
+          					console.log(oevent.target);
+          					oevent.target.removeChild(oinput);
+//  					    var id=$($(oevent.target).parent().find("td:first"))[0].innerHTML;
+//  					    var title=$($(oevent.target).parent().find("td:nth-child(2)"))[0].innerHTML;
+//  					    var price=$($(oevent.target).parent().find("td:nth-child(3)"))[0].innerHTML;
+//  					    $http.post("editForListPage.php",{id:id,title:title,price:price}).success(function(response){
+//								if(response.state==true){
+//									console.log(response.message);
+//								}else{
+//								    console.log(response.message);
+//								}
+//								
+//		            		});
+    					}
+    				}
+
+    			}
+                document.onclick=function(evt){
+                	var oevent=evt||event;
+                	if(oevent.target.innerHTML=="增加商品"){
+                		  var _html = '';
+                		  for(var i=0;i<4;i++){
+                		  	 _html+='<td width="100">new</td>';
+                		  }
+                		 _html+='<td width="100"><button class="btn btn-default remove" type="submit">提交修改内容</button><button class="btn btn-default remove" type="submit">删除</button></td>';
+                	    var Tr=document.createElement('tr')
+	                	Tr.setAttribute("ng-click","trClick(student, $index, $event)");
+	                	Tr.innerHTML=_html;
+	//              	$('tbody').appendChild(_html);
+	                    var tbody=$(oevent.target).parent().parent().parent().next();
+	                    $(Tr).appendTo(tbody);
+	//              	document.getElementsByTagName('tbody')[0].appendChild(Tr);
+	                    console.log(document.getElementsByTagName('tbody')[0]);
+                	
+                	}
+                     
+                    if(oevent.target.innerHTML=="提交修改内容"){   
+                        var id=$($(oevent.target).parent().parent().find("td:first"))[0].innerHTML;
+					    var title=$($(oevent.target).parent().parent().find("td:nth-child(2)"))[0].innerHTML;
+					    var price=$($(oevent.target).parent().parent().find("td:nth-child(3)"))[0].innerHTML;
+					    var img=$($(oevent.target).parent().parent().find("td:nth-child(4)"))[0].innerHTML;
+					   console.log(id+';'+title+';'+price);
+					   $http.post("editForListPage.php",{id:id,title:title,price:price,img:img}).success(function(response){
+							if(response.state==true){
+								console.log(response.message);
+							}else{
+							    console.log(response.message);
+							}
+							
+	            		});
+                
+                    }
+                    
+                    if(oevent.target.innerHTML=="删除"){ 
+                       var deleteid=$($(oevent.target).parent().parent().find("td:first"))[0].innerHTML;
+                       $http.post("deleteForListPage.php",{deleteid:deleteid}).success(function(response){
+							if(response.state==true){
+								console.log(response.message);
+							}else{
+							    console.log(response.message);
+							}
+						});
+                    }
+                    if(oevent.target.innerHTML=="刷新"){
+                    	window.location.href=window.location.href; 
+                        window.location.reload;  
+                    }
+                }     
+	}])
+</script>
